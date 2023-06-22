@@ -1,0 +1,86 @@
+USE DATABASE MYDATABASE;
+
+// Snowflake Assignment- 1  
+
+// question -01. Load the given dataset into snowflake with a primary key to Order Date column.
+
+create or replace table sales_data_final
+( order_id varchar(30),
+  order_extract int,
+ order_date DATE not null primary key,
+ ship_date DATE,
+ ship_mode varchar(40),
+ customer_name varchar(300),
+ segment varchar(40),
+ state varchar(100),
+ country varchar(50),
+ market varchar(20),
+ region varchar(50),
+ product_id string,
+ category varchar(60),
+ sub_category varchar(60),
+ product_name string,
+ sales STRING,
+ quantity int,
+ discount number(10,4),
+ profit number(8,3),
+ shipping_cost number(8,4),
+ order_priority varchar(70),
+ year int 
+);
+describe table sales_data_final;
+SELECT * FROM SALES_DATA_FINAL;
+
+//  Question 2. Change the Primary key to Order Id Column.
+
+Alter table sales_data_final 
+drop primary key; -- primary key set on order_date column dropped
+Alter table sales_data_final
+add primary key(order_id); -- primary key has been changed to order_id column.
+
+// Question 3. Check the data type for Order date and Ship date and mention in what data type it should be?
+
+describe table sales_data_final; -- order_date and ship_date is VARCHAR(16777216) datatype. 
+select get_ddl('table' , 'sales_data_final'); -- alternate method to get to know the datatype.
+
+select to_date(order_date , 'yyyy-mm-dd') from sales_data_final;
+select to_date(ship_date , 'yyyy-mm-dd') from sales_data_final;
+ 
+//4. EXTACT THE LAST NUMBER AFTER THE - AND CREATE OTHER COLUMN AND UPDATE IT.
+
+select order_extract from sales_data_final;
+
+
+
+// 5.  FLAG ,IF DISCOUNT IS GREATER THEN 0 THEN  YES ELSE NO AND PUT IT IN NEW COLUMN FRO EVERY ORDER ID.
+
+select * from sales_data_final;
+
+select *,
+   case when discount > 0 then 'YES'
+   else 'NO'
+end as discount_check
+from sales_data_final;
+
+// 6.  FIND OUT HOW MUCH DAYS TAKEN FOR EACH ORDER TO PROCESS FOR THE SHIPMENT FOR EVERY ORDER ID.
+
+select DATEDIFF(DAY, ORDER_DATE, SHIP_DATE) AS PROCESS_DAYS FROM SALES_DATA_FINAL;
+
+ALTER TABLE SALES_DATA_FINAL ADD COLUMN PROCESS_DAYS INT;
+SELECT * FROM SALES_DATA_FINAL;
+
+UPDATE SALES_DATA_FINAL
+SET PROCESS_DAYS = DATEDIFF(DAY,ORDER_DATE,SHIP_DATE) WHERE PROCESS_DAYS  IS NULL;
+
+
+//7 . FLAG THE PROCESS DAY AS BY RATING IF IT TAKES LESS OR EQUAL 3  DAYS MAKE 5,LESS OR EQUAL THAN 6 DAYS BUT MORE THAN 3 MAKE 4,LESS THAN 10 BUT MORE THAN 6 MAKE 3,MORE THAN 10 MAKE IT 2 FOR EVERY ORDER ID.
+
+SELECT *,
+  CASE
+  WHEN PROCESS_DAYS <= 3 THEN '5'
+  WHEN PROCESS_DAYS <= 6 AND PROCESS_DAYS > 3 THEN '4'
+  WHEN PROCESS_DAYS < 10 AND PROCESS_DAYS > 6 THEN '3'
+  WHEN PROCESS_DAYS > 10 THEN '2'
+  ELSE '0'
+END AS RATING
+FROM SALES_DATA_FINAL;
